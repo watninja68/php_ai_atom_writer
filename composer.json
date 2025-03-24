@@ -1,0 +1,16 @@
+{
+    "require": {
+        "openai-php/client": "^0.10.3",
+        "symfony/http-client": "^7.2",
+        "nyholm/psr7": "^1.8",
+        "guzzlehttp/guzzle": "^7.9",
+        "paddlehq/paddle-php-sdk": "^1.9",
+        "google/apiclient": "^2.18",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}
