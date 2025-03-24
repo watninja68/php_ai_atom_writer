@@ -89,6 +89,7 @@
             animation: fadeIn 1s ease-in forwards;
         }
     </style>
+    <script src="scripts/script.js"></script>
 </head>
 <body  class="text-white">
 <!-- class="bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white font-[Nunito] dark:from-gray-900 dark:to-gray-800 dark:text-gray-200" -->
