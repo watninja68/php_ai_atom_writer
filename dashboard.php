@@ -1,6 +1,5 @@
 <?php
 
-include 'db_init.php';
 
 ?>
 <?php $pageTitle = "Dashboard"; ?>
