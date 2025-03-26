@@ -1,13 +1,4 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
-
-?>
-<?php
 // Define breadcrumbs for different pages based on your sidebar navigation
 $breadcrumbs = [
     'dashboard.php' => [
