@@ -1,5 +1,5 @@
 <?php
-$host = "mysql://raiyan:password@atomwriter_database:3306/atomwriter"; // Change to "localhost" if needed
+$host = "atomwriter_database"; // Change to "localhost" if needed
 $dbname = "chat_db";
 $port = 3306; // Default MySQL port
 $dbUser = "root"; 
