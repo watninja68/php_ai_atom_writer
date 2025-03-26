@@ -16,10 +16,9 @@ use Paddle\SDK\Notifications\Events\TransactionUpdated;
 use Paddle\SDK\Notifications\Secret;
 use Paddle\SDK\Notifications\Verifier;
 
-// Create a PSR-7 compliant request object using the global variables, You don't need this line if you are using a framework that supports PSR-7
 $request = ServerRequest::fromGlobals();
 
-$isVerified = (new Verifier())->verify($request, new Secret(''));
+$isVerified = (new Verifier())->verify($request, new Secret('pdl_ntfset_01jq9k0z3j5m5tfaz5708xqk4z_sOC+7fruDmFOC3YekE33+hqYNvw8cXUA'));
 
 if ($isVerified) {
     echo "Webhook is verified\n";
