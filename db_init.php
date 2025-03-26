@@ -6,7 +6,6 @@ $dbUser = "root";
 $dbPass = "password";
 
 $dsn = "mysql:host=$host;dbname=$dbname;port=$port;charset=utf8mb4";
-echo "db connected";
 try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
