@@ -9,7 +9,7 @@ use Paddle\SDK\Entities\Event;
 use Paddle\SDK\Notifications\Events\TransactionUpdated;
 use Paddle\SDK\Notifications\Secret;
 use Paddle\SDK\Notifications\Verifier;
-
+echo "<h1>wehboook </h1>";
 // Capture the request
 $request = ServerRequest::fromGlobals();
 
