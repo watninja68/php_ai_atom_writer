@@ -33,9 +33,7 @@ if ($isVerified) {
     }
 
     // Ensure Paddle gets a valid response
-    http_response_code(200);
 
 } else {
-    http_response_code(400);
     echo json_encode(["error" => "Webhook is not verified"]);
 }
