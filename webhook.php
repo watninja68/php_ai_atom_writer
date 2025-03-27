@@ -18,7 +18,7 @@ $secret = new Secret('pdl_ntfset_01jq9k0z3j5m5tfaz5708xqk4z_sOC+7fruDmFOC3YekE33
 
 // Verify the request
 $isVerified = (new Verifier())->verify($request, $secret);
-
+echo $isVerified;
 if ($isVerified) {
     echo json_encode(["message" => "Webhook is verified"]);
 
