@@ -9,7 +9,6 @@ use Paddle\SDK\Entities\Event;
 use Paddle\SDK\Notifications\Events\TransactionUpdated;
 use Paddle\SDK\Notifications\Secret;
 use Paddle\SDK\Notifications\Verifier;
-echo "<h1>wehboook </h1>";
 // Capture the request
 $request = ServerRequest::fromGlobals();
 
@@ -18,7 +17,6 @@ $secret = new Secret('pdl_ntfset_01jq9k0z3j5m5tfaz5708xqk4z_sOC+7fruDmFOC3YekE33
 
 // Verify the request
 $isVerified = (new Verifier())->verify($request, $secret);
-echo $isVerified;
 if ($isVerified) {
     echo json_encode(["message" => "Webhook is verified let's gooooo"]);
 
@@ -30,6 +28,7 @@ if ($isVerified) {
 
     if ($event instanceof TransactionUpdated) {
         $transactionId = $event->transaction->id;
+        echo "<h1>Transaction ID: $transactionId</h1>";
     }
 
     // Ensure Paddle gets a valid response
