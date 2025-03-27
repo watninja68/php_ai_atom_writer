@@ -11,9 +11,10 @@ use Paddle\SDK\Notifications\Secret;
 use Paddle\SDK\Notifications\Verifier;
 // Capture the request
 $request = ServerRequest::fromGlobals();
-
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 // Secret key from Paddle
-$secret = new Secret('pdl_ntfset_01jq9k0z3j5m5tfaz5708xqk4z_sOC+7fruDmFOC3YekE33+hqYNvw8cXUA');
+$secret = new Secret($_ENV['PADDLE_SECRET']);
 
 // Verify the request
 $isVerified = (new Verifier())->verify($request, $secret);
