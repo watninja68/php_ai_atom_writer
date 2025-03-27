@@ -25,7 +25,7 @@ if ($isVerified) {
     $eventId = $event->eventId;
     $eventType = $event->eventType;
     $occurredAt = $event->occurredAt;
-
+    var_dump($event);
     if ($event instanceof TransactionUpdated) {
         $transactionId = $event->transaction->id;
         echo "<h1>Transaction ID: $transactionId</h1>";
