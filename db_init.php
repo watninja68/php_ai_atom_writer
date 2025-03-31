@@ -2,10 +2,8 @@
 <?php
 
 // Load environment variables (if not already loaded)
-if (file_exists(__DIR__ . '/.env')) {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
-}
 
 // Database credentials from environment variables
 $dbHost = $_ENV['DB_HOST'] ?? "mysql://raiyan:password@atomwriter_database:3306/atomwriter";
