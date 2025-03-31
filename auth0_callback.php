@@ -15,7 +15,7 @@ try {
     global $dsn, $dbUser, $dbPass;
     $pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 } catch (PDOException $e) {
-    echo "db not working da"''
+    echo "db not working da";
 /*    error_log("Database connection failed in auth0_callback.php: " . $e->getMessage());*/
     /*redirectToLoginWithError('Database connection error during login.');*/
     /*exit;*/
