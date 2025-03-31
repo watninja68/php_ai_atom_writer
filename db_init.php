@@ -15,11 +15,12 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
 
-// You might have the PDO connection created here or just define the variables
-// try {
-//     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
-// } catch (\PDOException $e) {
-//     throw new \PDOException($e->getMessage(), (int)$e->getCode());
-// }
+ You might have the PDO connection created here or just define the variables
+ try {
+     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
+echo"Database done";
+ } catch (\PDOException $e) {
+     throw new \PDOException($e->getMessage(), (int)$e->getCode());
+ }
 
 ?>
