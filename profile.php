@@ -27,7 +27,7 @@ if (!isAuthenticated()) {
 		<div class="content home">
 
 			<div class="profile-picture">
-                <img src="<?=$google_picture?>" alt="<?=$google_name?>" width="100" height="100">
+                <img src="<?=$data?>" alt="<?=$name?>" width="100" height="100">
             </div>
 
             <div class="profile-details">
@@ -38,7 +38,7 @@ if (!isAuthenticated()) {
                     </div>
                     <div class="wrap">
                         <strong>Name</strong>
-                        <span><?=$google_name?></span>
+                        <span><?=$name?></span>
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@ if (!isAuthenticated()) {
                     </div>
                     <div class="wrap">
                         <strong>Email</strong>
-                        <span><?=$google_email?></span>
+                        <span><?=$email?></span>
                     </div>
                 </div>
 

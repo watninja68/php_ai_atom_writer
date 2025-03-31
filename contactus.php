@@ -1,8 +1,6 @@
 <?php
 session_start();
-
-?>
-<?php $pageTitle = "Contact Us"; ?>
+$pageTitle = "Contact Us"; ?>
 <?php require_once 'layout/header.php'; ?>
 
     <div class="flex flex-col md:flex-row">

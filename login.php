@@ -1,52 +1,75 @@
 <?php
-session_start(); // Start session to check for errors
+// THIS MUST BE AT THE VERY TOP BEFORE ANY HTML
+require_once __DIR__ . '/auth0_handler.php'; // To get session started and functions
 
-$pageTitle = "Login";
-// Basic header without needing full authentication check yet
+// If user is already logged in, redirect them to dashboard
+if (isAuthenticated()) {
+    header('Location: dashboard.php');
+    exit;
+}
+
+$loginError = null;
+if (isset($_SESSION['login_error'])) {
+    $loginError = $_SESSION['login_error'];
+    unset($_SESSION['login_error']); // Clear error after displaying
+}
+
+$loggedOutMessage = null;
+if (isset($_GET['loggedout']) && $_GET['loggedout'] === 'true') {
+    $loggedOutMessage = "You have been successfully logged out.";
+}
+
 ?>
 <!DOCTYPE html>
-<html lang="en" class="dark">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($pageTitle) ? $pageTitle . ' - AI Writer' : 'AI Writer'; ?></title>
+    <title>Login - AI Atom Writer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="styles/custom.css"> <!-- Assuming your custom styles -->
-    <script>
-        // Handle theme switching (optional, keep if you use it)
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
+    <link rel="stylesheet" href="styles/custom.css"> <!-- Adjust path if needed -->
+    <style>
+        /* Add styles for error/success messages */
+        .message { padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; }
+        .message-error { background-color: #fecaca; border: 1px solid #f87171; color: #b91c1c; }
+        .message-success { background-color: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; }
+    </style>
 </head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
-<body class="bg-gray-900 text-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md text-center">
-        <h1 class="text-3xl font-bold mb-6 text-cyan-400">Login or Sign Up</h1>
-        <p class="text-gray-400 mb-8">Use your preferred method to access the AI Writer.</p>
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            AI Atom Writer Login
+        </h1>
 
-        <?php
-        // Display login errors if any
-        if (isset($_SESSION['login_error'])) {
-            echo '<div class="bg-red-500/30 border border-red-600 text-red-200 px-4 py-3 rounded relative mb-6" role="alert">';
-            echo '<strong class="font-bold">Error:</strong>';
-            echo '<span class="block sm:inline"> ' . htmlspecialchars($_SESSION['login_error']) . '</span>';
-            echo '</div>';
-            unset($_SESSION['login_error']); // Clear error after displaying
-        }
-        ?>
+        <?php if ($loginError): ?>
+            <div class="message message-error" role="alert">
+                <?php echo htmlspecialchars($loginError); ?>
+            </div>
+        <?php endif; ?>
 
-        <a href="auth0_action.php?action=login"
-           class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg inline-flex items-center justify-center transition duration-300 ease-in-out transform hover:scale-105 glow">
-            <i class="fas fa-sign-in-alt mr-2"></i> Login / Sign Up with Auth0
-        </a>
-         <p class="text-sm text-gray-500 mt-4">You will be redirected to Auth0 to choose your login method (Email/Password, Google, or Microsoft).</p>
+        <?php if ($loggedOutMessage): ?>
+            <div class="message message-success" role="alert">
+                <?php echo htmlspecialchars($loggedOutMessage); ?>
+            </div>
+        <?php endif; ?>
+
+        <p class="text-center text-gray-400 mb-6">
+            Please log in using your preferred method via our secure provider.
+        </p>
+
+        <div class="text-center">
+            <a href="auth0_action.php?action=login"
+               class="inline-block w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg shadow-md hover:from-cyan-400 hover:to-blue-500 transition duration-300 glow focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-75">
+                Login / Sign Up
+            </a>
+        </div>
+
+        <!-- Optional: Add links like "Forgot Password?" if handled by Auth0 -->
+        <!-- <div class="text-center mt-4">
+            <a href="#" class="text-sm text-cyan-400 hover:text-cyan-300">Forgot Password?</a>
+        </div> -->
     </div>
 
-    <script src="scripts/script.js"></script> <!-- Include if needed for theme toggle -->
 </body>
 </html>

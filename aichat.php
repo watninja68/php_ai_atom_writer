@@ -37,6 +37,7 @@ $client = OpenAI::factory()
     ->withBaseUri('https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
     ->make();
 
+$userId = $_SESSION['user_id'];
 
 // Handle conversation ID
 if (isset($_GET['conversation_id'])) {

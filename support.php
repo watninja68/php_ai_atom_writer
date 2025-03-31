@@ -1,4 +1,6 @@
-<?php $pageTitle = "Support"; ?>
+<?php 
+session_start();
+$pageTitle = "Support"; ?>
 <?php require_once 'layout/header.php'; ?>
 
   <div class="flex flex-col md:flex-row">

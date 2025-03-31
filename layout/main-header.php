@@ -4,10 +4,6 @@
 // you might not need this require_once here, but it's safer to include it.
 require_once __DIR__ . '/../auth0_handler.php';
 
-// Ensure session is started if not already
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 $isAuthenticated = isAuthenticated(); // Check authentication status
 $user = $isAuthenticated ? getUser() : null; // Get user info if authenticated

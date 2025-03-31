@@ -1,12 +1,13 @@
 <?php
-// auth0_callback.php
 // This file acts solely as the entry point for the Auth0 redirect.
+// All logic is handled within auth0_handler.php.
 
-// Include the handler - it now contains ONLY definitions and session start.
-// The handler itself will NOT output "Invalid Auth Action".
 require_once __DIR__ . '/auth0_handler.php';
 
-// Establish PDO connection for the callback handler
+// The routing logic within auth0_handler.php checks for '?action=callback'
+// which is implicitly handled because this file is the redirect target.
+// If you didn't use '?action=callback' in the handler's routing,
+// you would explicitly call handleCallback() here.
 $pdo = null;
 try {
     // Make sure $dsn, $dbUser, $dbPass are defined from db_init.php via the included handler

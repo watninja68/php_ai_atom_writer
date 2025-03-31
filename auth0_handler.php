@@ -29,121 +29,141 @@ $configuration = new SdkConfiguration(
 
 $auth0 = new Auth0($configuration);
 
-// Centralized session start
+// Centralized session start - THIS IS THE ONLY PLACE IT SHOULD BE CALLED
 if (session_status() === PHP_SESSION_NONE) {
+    // Consider adding session cookie parameters for security
+    // session_set_cookie_params(['lifetime' => 7200, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
     session_start();
 }
 
-/**
- * Initiates the login process by redirecting to Auth0 Universal Login.
- */
+// Function definitions (handleLogin, getUser, isAuthenticated, redirectToLoginWithError remain largely the same)
+
 function handleLogin(Auth0 $auth0): void
 {
-    // Clear any previous session state to avoid conflicts
     $auth0->clear();
-    // Redirect to Auth0 login page
+    // Store the intended destination if the user was trying to access a specific page
+    // Note: This assumes the login redirect originates from a page check.
+    // If login starts ONLY from login.php, this won't capture the original page.
+    // A more robust way might involve passing a 'redirect_to' param through the login process.
+    if (isset($_SESSION['redirect_url_pending'])) {
+         $_SESSION['redirect_url'] = $_SESSION['redirect_url_pending'];
+         unset($_SESSION['redirect_url_pending']);
+    }
     header("Location: " . $auth0->login());
     exit;
 }
 
-/**
- * Handles the callback from Auth0 after authentication.
- */
+
 function handleCallback(Auth0 $auth0, ?PDO $pdo): void
 {
+    if (!$pdo) {
+         error_log("PDO connection not available in Auth0 callback. Cannot link user.");
+         redirectToLoginWithError('Database service unavailable during login.');
+         return;
+    }
+
     try {
-        // Attempt to exchange the authorization code for tokens and user profile
         $auth0->exchange();
         $user = $auth0->getUser();
 
         if ($user === null) {
-            // ... error handling ...
+            error_log('Auth0 callback did not return a user.');
+            redirectToLoginWithError('Authentication failed. Please try again.');
             return;
         }
-        
-        $auth0UserId = $user['sub']; // The unique Auth0 user ID
+
+        $auth0UserId = $user['sub']; // The unique Auth0 user ID (string)
         $email = $user['email'] ?? null;
         $name = $user['name'] ?? $user['nickname'] ?? 'Auth0 User';
         $picture = $user['picture'] ?? null;
         $emailVerified = $user['email_verified'] ?? false;
-        
+
         // --- Database Linking/Creation ---
         $internalUserId = null;
         $isNewUser = false;
-        
-        if ($pdo) { // Check if PDO connection was successful
-            try {
-                // Check if user exists by Auth0 ID
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE auth0_user_id = :auth0_id LIMIT 1");
-                $stmt->execute([':auth0_id' => $auth0UserId]);
-                $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-                if ($existingUser) {
-                    // User exists, get internal ID
-                    $internalUserId = $existingUser['id'];
-        
-                    // Optional: Update user details if they changed in Auth0
-                    $updateStmt = $pdo->prepare("UPDATE users SET name = :name, email = :email, data = JSON_SET(COALESCE(data, '{}'), '$.picture', :picture) WHERE id = :id");
-                    $updateStmt->execute([
-                        ':name' => $name,
-                        ':email' => $email,
-                        ':picture' => $picture,
-                        ':id' => $internalUserId
-                    ]);
-        
-                } else {
-                    // User does not exist, create a new one
-                    $insertStmt = $pdo->prepare(
-                        "INSERT INTO users (auth0_user_id, name, email, email_verified_at, password, status, data, created_at, updated_at)
-                         VALUES (:auth0_id, :name, :email, :email_verified, :password, :status, :data, NOW(), NOW())"
-                    );
-        
-                    // Generate a secure random password (user won't use it directly)
-                    $randomPassword = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
-        
-                    $insertStmt->execute([
-                        ':auth0_id' => $auth0UserId,
-                        ':name' => $name,
-                        ':email' => $email,
-                        ':email_verified' => $emailVerified ? date('Y-m-d H:i:s') : null,
-                        ':password' => $randomPassword, // Required by schema, but unused for Auth0 login
-                        ':status' => 'active', // Or your default status
-                        ':data' => json_encode(['picture' => $picture]) // Store picture or other data
-                    ]);
-        
-                    $internalUserId = $pdo->lastInsertId();
-                    $isNewUser = true;
-                }
-        
-            } catch (PDOException $e) {
-                error_log("Database error during Auth0 callback: " . $e->getMessage());
-                // Decide how to proceed. Maybe log error and continue without internal ID?
-                // Or redirect with a generic error.
-                redirectToLoginWithError('A database error occurred during login.');
-                return; // Stop execution if DB link fails
+
+        try {
+            // Check if user exists by Auth0 ID
+            // Ensure 'auth0_user_id' column exists in your 'users' table!
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE auth0_user_id = :auth0_id LIMIT 1");
+            $stmt->execute([':auth0_id' => $auth0UserId]);
+            $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($existingUser) {
+                // User exists, get internal ID
+                $internalUserId = (int) $existingUser['id']; // Cast to int
+
+                // Optional: Update user details if they changed in Auth0
+                $updateStmt = $pdo->prepare(
+                    "UPDATE users SET name = :name, email = :email, email_verified_at = :email_verified, data = JSON_SET(COALESCE(data, '{}'), '$.picture', :picture), updated_at = NOW()
+                     WHERE id = :id"
+                );
+                $updateStmt->execute([
+                    ':name' => $name,
+                    ':email' => $email,
+                    ':email_verified' => $emailVerified ? date('Y-m-d H:i:s') : null,
+                    ':picture' => $picture,
+                    ':id' => $internalUserId
+                ]);
+
+            } else {
+                // User does not exist, create a new one
+                $insertStmt = $pdo->prepare(
+                    "INSERT INTO users (auth0_user_id, name, email, email_verified_at, status, data, created_at, updated_at)
+                     VALUES (:auth0_id, :name, :email, :email_verified, :status, :data, NOW(), NOW())"
+                );
+                // Note: Removed password insert, assuming it's nullable or has a default
+
+                $insertStmt->execute([
+                    ':auth0_id' => $auth0UserId,
+                    ':name' => $name,
+                    ':email' => $email,
+                    ':email_verified' => $emailVerified ? date('Y-m-d H:i:s') : null,
+                    ':status' => 'active', // Or your default status
+                    ':data' => json_encode(['picture' => $picture]) // Store picture or other data
+                ]);
+
+                $internalUserId = (int) $pdo->lastInsertId(); // Cast to int
+                $isNewUser = true;
+                // Potential actions for new users: assign default plan, trigger welcome email, etc.
             }
-        } else {
-             error_log("PDO connection not available in Auth0 callback. Cannot link user.");
-             // Handle case where DB connection failed earlier - maybe allow login without linking?
+
+        } catch (PDOException $e) {
+            error_log("Database error during Auth0 callback user linking: " . $e->getMessage());
+            // If it's a unique constraint violation on email but not auth0_id, handle linking?
+            // For now, redirect with a generic error.
+            redirectToLoginWithError('A database error occurred while processing your account.');
+            return; // Stop execution
         }
         // --- End Database Linking ---
-        
-        
-        // Store Auth0 info AND internal user ID (if available)
-        $_SESSION['auth0_user'] = $user;
+
+        // Regenerate session ID upon successful login for security
+        session_regenerate_id(true);
+
+        // Store essential info in session
+        $_SESSION['auth0_user'] = $user; // Keep Auth0 profile if needed elsewhere
         $_SESSION['auth0_loggedin'] = true;
-        $_SESSION['user_id'] = $internalUserId; // Store your internal user ID
-        $_SESSION['user_email'] = $email;
-        $_SESSION['user_name'] = $name;
-        $_SESSION['user_picture'] = $picture;
-        
-        // Redirect to dashboard
-        header('Location: dashboard.php');
+        $_SESSION['user_id'] = $internalUserId; // Store YOUR internal user ID (INT)
+        $_SESSION['user_email'] = $email; // Store email
+        $_SESSION['user_name'] = $name;   // Store name
+        $_SESSION['user_picture'] = $picture; // Store picture
+
+        // --- Redirect Logic ---
+        $redirectTarget = 'dashboard.php'; // Default redirect
+        if (isset($_SESSION['redirect_url']) && !empty($_SESSION['redirect_url'])) {
+            // Basic validation: ensure it's a relative path within your site
+            if (parse_url($_SESSION['redirect_url'], PHP_URL_HOST) === null && substr($_SESSION['redirect_url'], 0, 1) === '/') {
+                 $redirectTarget = $_SESSION['redirect_url'];
+            }
+             unset($_SESSION['redirect_url']); // Clean up session
+        }
+
+        header('Location: ' . $redirectTarget);
         exit;
 
     } catch (\Auth0\SDK\Exception\StateException $e) {
         error_log('Auth0 StateException: ' . $e->getMessage());
-        redirectToLoginWithError('Invalid state. Please try logging in again.');
+        redirectToLoginWithError('Invalid state preventing login. Please try logging in again.');
     } catch (\Auth0\SDK\Exception\ConfigurationException $e) {
         error_log('Auth0 ConfigurationException: ' . $e->getMessage());
         redirectToLoginWithError('Authentication service configuration error.');
@@ -151,49 +171,57 @@ function handleCallback(Auth0 $auth0, ?PDO $pdo): void
         error_log('Auth0 NetworkException: ' . $e->getMessage());
         redirectToLoginWithError('Cannot connect to authentication service. Please try again later.');
     } catch (\Exception $e) {
-        error_log('Auth0 Callback General Error: ' . $e->getMessage());
-        // Log the full error for debugging, but show a generic message to the user
+        error_log('Auth0 Callback General Error: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
         redirectToLoginWithError('An unexpected error occurred during login. Please try again.');
     }
 }
 
-/**
- * Logs the user out from both the application and Auth0.
- */
 function handleLogout(Auth0 $auth0): void
 {
-    // The logout URL must be configured in your Auth0 Application settings -> Allowed Logout URLs
-    $logoutUrl = $auth0->logout($_ENV['AUTH0_BASE_URL'] . '/login.php');
+    // Redirect to Auth0 logout endpoint.
+    // It will clear Auth0 session cookies and then redirect back to the URL specified here.
+    $logoutUrl = $auth0->logout($_ENV['AUTH0_BASE_URL'] . '/login.php?loggedout=true'); // Added param for feedback
+
+    // Clear local session data *before* redirecting
+    $_SESSION = array(); // Clear all session variables
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    session_destroy(); // Destroy the session
+
     header('Location: ' . $logoutUrl);
     exit;
 }
 
-/**
- * Retrieves the authenticated user's profile from the session.
- */
-function getUser(): ?array
+
+function getUser(): ?array // Keep this if you need the full Auth0 profile elsewhere
 {
     return $_SESSION['auth0_user'] ?? null;
 }
 
-/**
- * Checks if the user is authenticated.
- */
 function isAuthenticated(): bool
 {
-    return isset($_SESSION['auth0_loggedin']) && $_SESSION['auth0_loggedin'] === true && isset($_SESSION['auth0_user']);
+    // Check for both Auth0 flag AND your internal user ID
+    return isset($_SESSION['auth0_loggedin']) && $_SESSION['auth0_loggedin'] === true && isset($_SESSION['user_id']) && is_int($_SESSION['user_id']);
 }
 
-/**
- * Redirects to the login page with an error message.
- */
 function redirectToLoginWithError(string $message): void
 {
-    $_SESSION['login_error'] = $message;
-    header('Location: login.php');
+    // Clear any partial login state before redirecting
+    if (isset($_SESSION)) { // Check if session exists before trying to modify it
+        unset($_SESSION['auth0_loggedin'], $_SESSION['auth0_user'], $_SESSION['user_id']);
+        $_SESSION['login_error'] = $message;
+    }
+    header('Location: login.php'); // Redirect to login page
     exit;
 }
 
-// --- Routing Logic (Example using GET parameter) ---
+// --- End of Function Definitions ---
+
+// Note: Removed routing logic from here. It belongs in specific entry points like auth_action.php or auth0_callback.php.
 
 ?>
