@@ -1,16 +1,19 @@
 <?php
 // Initialize the session - is required to check the login state.
-session_start();
-// Check if the user is logged in, if not then redirect to login page
-if (!isset($_SESSION['google_loggedin'])) {
+require_once __DIR__ . '/auth0_handler.php'; // Use require_once to ensure it's loaded
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start(); // Ensure session is started *before* checking authentication
+}
+
+if (!isAuthenticated()) {
+    // Optional: Store the intended destination to redirect back after login
+    $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
+
+    // Redirect to login page if not authenticated
     header('Location: login.php');
     exit;
 }
-// Retrieve session variables
-$google_loggedin = $_SESSION['google_loggedin'];
-$google_email = $_SESSION['google_email'];
-$google_name = $_SESSION['google_name'];
-$google_picture = $_SESSION['google_picture'];
 ?>
 <html>
 	<head>
@@ -24,7 +27,7 @@ $google_picture = $_SESSION['google_picture'];
 		<div class="content home">
 
 			<div class="profile-picture">
-                <img src="<?=$google_picture?>" alt="<?=$google_name?>" width="100" height="100">
+                <img src="<?=$data?>" alt="<?=$name?>" width="100" height="100">
             </div>
 
             <div class="profile-details">
@@ -35,7 +38,7 @@ $google_picture = $_SESSION['google_picture'];
                     </div>
                     <div class="wrap">
                         <strong>Name</strong>
-                        <span><?=$google_name?></span>
+                        <span><?=$name?></span>
                     </div>
                 </div>
 
@@ -45,7 +48,7 @@ $google_picture = $_SESSION['google_picture'];
                     </div>
                     <div class="wrap">
                         <strong>Email</strong>
-                        <span><?=$google_email?></span>
+                        <span><?=$email?></span>
                     </div>
                 </div>
 

@@ -1,17 +1,27 @@
 <?php
 include 'db_init.php';
 require_once 'vendor/autoload.php';
-session_start();
+
+require_once __DIR__ . '/auth0_handler.php'; // Use require_once to ensure it's loaded
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start(); // Ensure session is started *before* checking authentication
+}
+
+if (!isAuthenticated()) {
+    // Optional: Store the intended destination to redirect back after login
+    // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
+
+    // Redirect to login page if not authenticated
+    header('Location: login.php');
+    exit;
+}
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $yourApiKey = $_ENV['QWEN_API'];
 
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
 
 try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, [
@@ -27,7 +37,7 @@ $client = OpenAI::factory()
     ->withBaseUri('https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
     ->make();
 
-$userId = $_SESSION['google_email'];
+$userId = $_SESSION['user_id'];
 
 // Handle conversation ID
 if (isset($_GET['conversation_id'])) {
