@@ -1,5 +1,5 @@
 <?php
-$dbHost = "mysql://raiyan:password@atomwriter_database:3306/atomwrite";
+$dbHost = "mysql://raiyan:password@atomwriter_database:3306/atomwriter"; // Or your DB host (e.g., localhost)
 $dbPort = "3306";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
 $dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
@@ -14,18 +14,5 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,    // Fetch associative arrays
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
-echo "hi";
- $try {
-
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ]);
-echo"Database done";
- } catch ( PDOException $e) {
-echo"Database failed";
-     throw new \PDOException($e->getMessage(), (int)$e->getCode());
- }
 
 ?>
