@@ -15,7 +15,6 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
 
- You might have the PDO connection created here or just define the variables
  try {
      $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 echo"Database done";
