@@ -6,7 +6,7 @@
     $dotenv->load();
 
 // Database credentials from environment variables
-$dbHost = $_ENV['DB_HOST'] ?? "mysql://raiyan:password@atomwriter_database:3306/atomwriter";
+$dbHost = $_ENV['DB_HOST'] ?? "atomwriter_database";
 $dbPort = $_ENV['DB_PORT'] ?? '3306';     // Default to 3306 if not set
 $dbName = $_ENV['DB_NAME'] ?? 'write_db';   // Use a default name, but *require* it to be set
 $dbUser = $_ENV['DB_USER'] ?? 'root';      // Provide a default, but strongly encourage changing it
