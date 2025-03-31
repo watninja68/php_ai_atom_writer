@@ -18,7 +18,7 @@ echo "hi";
  $try {
      $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 echo"Database done";
- } catch (\PDOException $e) {
+ } catch ( PDOException $e) {
 echo"Database failed";
      throw new \PDOException($e->getMessage(), (int)$e->getCode());
  }
