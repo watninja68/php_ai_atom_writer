@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
-
+if (session_status() === PHP_SESSION_NONE) {
+    // Consider adding session cookie parameters for security
+    // session_set_cookie_params(['lifetime' => 7200, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+    session_start();
+}
 require __DIR__ . '/vendor/autoload.php';
 include_once __DIR__ . '/db_init.php'; // Include DB config if needed later for user linking
 
@@ -30,11 +34,7 @@ $configuration = new SdkConfiguration(
 $auth0 = new Auth0($configuration);
 
 // Centralized session start - THIS IS THE ONLY PLACE IT SHOULD BE CALLED
-if (session_status() === PHP_SESSION_NONE) {
-    // Consider adding session cookie parameters for security
-    // session_set_cookie_params(['lifetime' => 7200, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
-    session_start();
-}
+
 
 // Function definitions (handleLogin, getUser, isAuthenticated, redirectToLoginWithError remain largely the same)
 
