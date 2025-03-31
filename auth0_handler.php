@@ -1,12 +1,8 @@
 <?php
 declare(strict_types=1);
-if (session_status() === PHP_SESSION_NONE) {
-    // Consider adding session cookie parameters for security
-    // session_set_cookie_params(['lifetime' => 7200, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
-    session_start();
-}
-require __DIR__ . '/vendor/autoload.php';
-include_once __DIR__ . '/db_init.php'; // Include DB config if needed later for user linking
+
+require _DIR_ . '/vendor/autoload.php';
+include_once _DIR_ . '/db_init.php'; // Include DB config if needed later for user linking
 
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Configuration\SdkConfiguration;
@@ -14,7 +10,7 @@ use Dotenv\Dotenv;
 
 // Load environment variables
 try {
-    $dotenv = Dotenv::createImmutable(__DIR__);
+    $dotenv = Dotenv::createImmutable(_DIR_);
     $dotenv->load();
     $dotenv->required(['AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET', 'AUTH0_COOKIE_SECRET', 'AUTH0_BASE_URL']);
 } catch (Exception $e) {
@@ -34,7 +30,11 @@ $configuration = new SdkConfiguration(
 $auth0 = new Auth0($configuration);
 
 // Centralized session start - THIS IS THE ONLY PLACE IT SHOULD BE CALLED
-
+if (session_status() === PHP_SESSION_NONE) {
+    // Consider adding session cookie parameters for security
+    // session_set_cookie_params(['lifetime' => 7200, 'path' => '/', 'domain' => $_SERVER['HTTP_HOST'], 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+    session_start();
+}
 
 // Function definitions (handleLogin, getUser, isAuthenticated, redirectToLoginWithError remain largely the same)
 
@@ -182,7 +182,7 @@ function handleLogout(Auth0 $auth0): void
     // It will clear Auth0 session cookies and then redirect back to the URL specified here.
     $logoutUrl = $auth0->logout($_ENV['AUTH0_BASE_URL'] . '/login.php?loggedout=true'); // Added param for feedback
 
-    // Clear local session data *before* redirecting
+    // Clear local session data before redirecting
     $_SESSION = array(); // Clear all session variables
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
