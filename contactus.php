@@ -1,13 +1,6 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
-
-?>
-<?php $pageTitle = "Contact Us"; ?>
+$pageTitle = "Contact Us"; ?>
 <?php require_once 'layout/header.php'; ?>
 
     <div class="flex flex-col md:flex-row">

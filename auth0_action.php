@@ -1,6 +1,7 @@
 <?php
-include 'db_init.php';
-require_once 'vendor/autoload.php';
+// auth_action.php
+
+// Include the handler to get $auth0, functions, and session started
 require_once __DIR__ . '/auth0_handler.php';
 
 // --- Routing Logic ---
@@ -36,15 +37,4 @@ else {
      header('Location: login.php');
      exit;
 }
-
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-$yourApiKey = $_ENV['QWEN_API'];
-$google_oauth_client_id = $_ENV['GOOGLE_CLIENT_ID'];
-$google_oauth_client_secret = $_ENV['GOOGLE_CLIENT_SECRET'];
-
-echo $yourApiKey;
-echo $google_oauth_client_id;
-echo $google_oauth_client_secret;
 ?>

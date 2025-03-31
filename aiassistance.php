@@ -1,10 +1,20 @@
 <?php
-session_start();
+// Include the Auth0 handler - this also handles session_start() safely
+require_once __DIR__ . '/auth0_handler.php';
 
-if (!isset($_SESSION['google_loggedin'])) {
+// Use the function from the handler to check authentication
+if (!isAuthenticated()) {
+    // Optional: Store the intended destination
+    // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Uncomment if you want redirect back after login
     header('Location: login.php');
     exit;
 }
+
+// If authenticated, the script continues...
+// Example: Get user info if needed
+$userName = $_SESSION['user_name'] ?? 'User';
+$userEmail = $_SESSION['user_email'] ?? '';
+$userId = $_SESSION['user_id'] ?? null; // Your internal DB user ID
 
 ?>
 

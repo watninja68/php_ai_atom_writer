@@ -2,10 +2,6 @@
 declare(strict_types=1);
 session_start();
 
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
 use Paddle\SDK\Entities\Price;
 use Paddle\SDK\Entities\Shared\CountryCode;
 use Paddle\SDK\Entities\Shared\CurrencyCode;
