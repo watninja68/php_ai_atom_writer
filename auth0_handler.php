@@ -10,7 +10,7 @@ use Dotenv\Dotenv;
 
 // Load environment variables
 try {
-    $dotenv = Dotenv::createImmutable(_DIR_);
+    $dotenv = Dotenv::createImmutable(__DIR__);
     $dotenv->load();
     $dotenv->required(['AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET', 'AUTH0_COOKIE_SECRET', 'AUTH0_BASE_URL']);
 } catch (Exception $e) {
