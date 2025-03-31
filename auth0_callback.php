@@ -14,6 +14,7 @@ try {
     // Make sure $dsn, $dbUser, $dbPass are defined from db_init.php via the included handler
     global $dsn, $dbUser, $dbPass;
     $pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    echo "working da";
 } catch (PDOException $e) {
     echo "db not working da";
 /*    error_log("Database connection failed in auth0_callback.php: " . $e->getMessage());*/
