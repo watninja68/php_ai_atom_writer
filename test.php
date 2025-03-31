@@ -1,50 +1,42 @@
+
 <?php
-include 'db_init.php';
-require_once 'vendor/autoload.php';
-require_once __DIR__ . '/auth0_handler.php';
 
-// --- Routing Logic ---
-$action = $_GET['action'] ?? null;
+require_once 'db_init.php'; // Include the database connection script
 
-// ---- NO DATABASE CONNECTION NEEDED HERE for standard login/logout ----
-/*
-$pdo = null;
 try {
-    global $dsn, $dbUser, $dbPass;
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    // Attempt a simple query
+    $stmt = $pdo->query("SELECT 1"); // A very basic query to check the connection
+    $result = $stmt->fetch();
+
+    if ($result && $result[0] == 1) {
+        echo "<p style='color: green;'>Database connection successful!</p>";
+
+        // Example: Fetch and display some data (replace with your table/data)
+        $dataStmt = $pdo->query("SELECT * FROM your_table LIMIT 5"); // Replace your_table
+        if ($dataStmt) {
+            echo "<h3>Example Data (First 5 rows from your_table):</h3>";
+            echo "<table border='1'>";
+            echo "<tr><th>Column 1</th><th>Column 2</th><th>...</th></tr>"; // Adjust column headers
+
+            while ($row = $dataStmt->fetch(PDO::FETCH_ASSOC)) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['column1']) . "</td>"; // Adjust column names
+                echo "<td>" . htmlspecialchars($row['column2']) . "</td>";
+                echo "<td>...</td>";
+                echo "</tr>";
+            }
+            echo "</table>";
+        } else {
+            echo "<p style='color: orange;'>Could not fetch example data (check your_table and columns exist).</p>";
+        }
+
+    } else {
+        echo "<p style='color: red;'>Database connection failed (basic query failed).</p>";
+    }
+
 } catch (PDOException $e) {
-    error_log("Database connection failed in auth_action.php: " . $e->getMessage());
-    // Use function from handler. Pass a generic message.
-    redirectToLoginWithError('Database service unavailable.');
-    exit;
-}
-*/
-// ---- END REMOVED DB CONNECTION ----
-
-if ($action === 'login') {
-    handleLogin($auth0); // Call function defined in the handler
-}
-elseif ($action === 'logout') {
-    handleLogout($auth0); // Call function defined in the handler
-}
-else {
-    // Default action: Invalid action, redirect to login or show error
-    // echo "Invalid authentication action specified.";
-    // header('HTTP/1.1 400 Bad Request');
-    // exit('Invalid action.');
-    // Or redirect:
-     header('Location: login.php');
-     exit;
+    echo "<p style='color: red;'>Database connection error: " . htmlspecialchars($e->getMessage()) . "</p>";
 }
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-$yourApiKey = $_ENV['QWEN_API'];
-$google_oauth_client_id = $_ENV['GOOGLE_CLIENT_ID'];
-$google_oauth_client_secret = $_ENV['GOOGLE_CLIENT_SECRET'];
-
-echo $yourApiKey;
-echo $google_oauth_client_id;
-echo $google_oauth_client_secret;
 ?>
+

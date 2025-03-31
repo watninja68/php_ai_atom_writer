@@ -142,11 +142,11 @@ function handleCallback(Auth0 $auth0, ?PDO $pdo): void
 
         // Store essential info in session
         $_SESSION['auth0_user'] = $user; // Keep Auth0 profile if needed elsewhere
-        $_SESSION['auth0_loggedin'] = true;
-        $_SESSION['user_id'] = $internalUserId; // Store YOUR internal user ID (INT)
-        $_SESSION['user_email'] = $email; // Store email
-        $_SESSION['user_name'] = $name;   // Store name
-        $_SESSION['user_picture'] = $picture; // Store picture
+/*        $_SESSION['auth0_loggedin'] = true;*/
+        /*$_SESSION['user_id'] = $internalUserId; // Store YOUR internal user ID (INT)*/
+        /*$_SESSION['user_email'] = $email; // Store email*/
+        /*$_SESSION['user_name'] = $name;   // Store name*/
+        /*$_SESSION['user_picture'] = $picture; // Store picture*/
 
         // --- Redirect Logic ---
         $redirectTarget = 'dashboard.php'; // Default redirect
@@ -182,7 +182,7 @@ function handleLogout(Auth0 $auth0): void
     // It will clear Auth0 session cookies and then redirect back to the URL specified here.
     $logoutUrl = $auth0->logout($_ENV['AUTH0_BASE_URL'] . '/login.php?loggedout=true'); // Added param for feedback
 
-    // Clear local session data *before* redirecting
+    // Clear local session data before redirecting
     $_SESSION = array(); // Clear all session variables
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
