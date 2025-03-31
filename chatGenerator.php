@@ -9,11 +9,6 @@ $dotenv->load();
 
 $yourApiKey = $_ENV['QWEN_API'];
 
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
-
 try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

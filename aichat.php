@@ -22,10 +22,6 @@ $dotenv->load();
 
 $yourApiKey = $_ENV['QWEN_API'];
 
-if (!isset($_SESSION['google_loggedin'])) {
-    header('Location: login.php');
-    exit;
-}
 
 try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, [
@@ -41,7 +37,6 @@ $client = OpenAI::factory()
     ->withBaseUri('https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
     ->make();
 
-$userId = $_SESSION['google_email'];
 
 // Handle conversation ID
 if (isset($_GET['conversation_id'])) {

@@ -1,18 +1,25 @@
 <?php
-$host = "localhost"; // Change to "localhost" if needed
-$dbname = "chat_db";
-$port = 8111; // Default MySQL port
-$dbUser = "root"; 
-$dbPass = "password";
+$dbHost = "127.0.0.1"; // Or your DB host (e.g., localhost)
+$dbPort = "8111";      // Or 8111 if that's your MariaDB port
+$dbName = "write_db";   // <--- CHANGE THIS
+$dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
+$dbPass = "";          // <--- CHANGE THIS (Your DB user's password)
 
-$dsn = "mysql:host=$host;dbname=$dbname;port=$port;charset=utf8mb4";
-try {
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ]);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+// Construct the DSN (Data Source Name)
+$dsn = "mysql:host=$dbHost;port=$dbPort;dbname=$dbName;charset=utf8mb4";
+
+// PDO options (optional but recommended)
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Throw exceptions on error
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,    // Fetch associative arrays
+    PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
+];
+
+// You might have the PDO connection created here or just define the variables
+// try {
+//     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
+// } catch (\PDOException $e) {
+//     throw new \PDOException($e->getMessage(), (int)$e->getCode());
+// }
+
 ?>

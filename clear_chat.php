@@ -2,7 +2,7 @@
 session_start();
 
 // Database connection (use the same parameters as in index.php)
-$dsn  = "mysql:host=localhost;dbname=chat_db;charset=utf8mb4";
+$dsn  = "mysql:host=localhost;dbname=write_db;charset=utf8mb4";
 $dbUser = "dbuser";
 $dbPass = "dbpass";
 

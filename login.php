@@ -40,7 +40,7 @@ $pageTitle = "Login";
         }
         ?>
 
-        <a href="auth0_handler.php?action=login"
+        <a href="auth0_action.php?action=login"
            class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg inline-flex items-center justify-center transition duration-300 ease-in-out transform hover:scale-105 glow">
             <i class="fas fa-sign-in-alt mr-2"></i> Login / Sign Up with Auth0
         </a>
