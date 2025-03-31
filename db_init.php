@@ -14,8 +14,8 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,    // Fetch associative arrays
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
-
- try {
+echo "hi";
+ $try {
      $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 echo"Database done";
  } catch (\PDOException $e) {
