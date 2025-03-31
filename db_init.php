@@ -1,5 +1,5 @@
 <?php
-$dbHost = "127.0.0.1"; // Or your DB host (e.g., localhost)
+$dbHost = "mysql://raiyan:password@atomwriter_database:3306/atomwrite"
 $dbPort = "3306";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
 $dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
