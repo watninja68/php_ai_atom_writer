@@ -1,5 +1,5 @@
 <?php
-$dbHost = "atomwriter_database";
+$dbHost = "localhost";
 $dbPort = "3306";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
 $dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
