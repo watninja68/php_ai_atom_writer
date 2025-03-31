@@ -1,5 +1,6 @@
 <?php
-$dbHost = "localhost";
+
+$dbHost = "45.132.241.167"; // Or your DB host (e.g., localhost)
 $dbPort = "3306";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
 $dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
@@ -14,4 +15,6 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,    // Fetch associative arrays
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
+
 ?>
+
