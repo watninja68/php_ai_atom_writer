@@ -35,7 +35,7 @@ try {
 
     // Set connection status to true if successful
     $db_connection_status = true;
-
+echo "db connection done yeay";
     // For testing the connection (remove in production)
     // echo "Successfully connected to the database!";
 
