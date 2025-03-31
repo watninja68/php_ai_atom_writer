@@ -1,7 +1,7 @@
 <?php
-$host = "atomwriter_database"; // Change to "localhost" if needed
+$host = "localhost"; // Change to "localhost" if needed
 $dbname = "chat_db";
-$port = 3306; // Default MySQL port
+$port = 8111; // Default MySQL port
 $dbUser = "root"; 
 $dbPass = "password";
 

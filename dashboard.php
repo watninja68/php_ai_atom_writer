@@ -1,7 +1,3 @@
-<?php
-
-
-?>
 <?php $pageTitle = "Dashboard"; ?>
 <?php require_once 'layout/header.php'; ?>
 

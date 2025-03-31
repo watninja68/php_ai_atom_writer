@@ -196,36 +196,49 @@ function redirectToLoginWithError(string $message): void
 
 // --- Routing Logic (Example using GET parameter) ---
 // In a real app, you might use a more robust router.
+// --- Routing Logic ---
 $action = $_GET['action'] ?? null;
+// Get the filename of the script that is actually being executed by the web server
+$currentScript = basename($_SERVER['SCRIPT_FILENAME']); // More reliable than PHP_SELF
 
-// Establish PDO connection (pass $pdo if needed for user linking)
-$pdo = null; // Initialize to null
-// Uncomment and complete if you implement database linking in handleCallback
-/*
+// Establish PDO connection (if not already done - ensure $pdo is available)
+$pdo = null;
 try {
+    // Make sure $dsn, $dbUser, $dbPass are defined from db_init.php which should be included above
     $pdo = new PDO($dsn, $dbUser, $dbPass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 } catch (PDOException $e) {
-    error_log("Database connection failed in auth0_handler: " . $e->getMessage());
-    // Decide how to handle DB connection failure during auth - maybe log and proceed without linking?
-    // die("Database connection failed."); // Or die if DB link is essential
+    error_log("Database connection failed in auth0_handler routing: " . $e->getMessage());
+    // Handle error appropriately, maybe redirect to login with error
+    redirectToLoginWithError('Database connection error during authentication.');
+    // Ensure script stops if DB connection fails here
 }
-*/
-
 
 if ($action === 'login') {
     handleLogin($auth0);
-} elseif ($action === 'callback') {
+}
+// Check if the current script being run *is* the callback script
+elseif ($currentScript === 'auth0_callback.php') {
+    // If this handler is included by auth0_callback.php, we *know* it's the callback phase
     handleCallback($auth0, $pdo); // Pass $pdo if doing DB linking
-} elseif ($action === 'logout') {
+}
+elseif ($action === 'logout') {
     handleLogout($auth0);
-} else {
-    // Default action or error handling
-    // Maybe redirect to login if no valid action?
-    // header('Location: login.php');
-    // exit;
-    // For safety, just output an error if no known action
-     echo "Invalid Auth Action.";
-     exit;
+}
+else {
+    // Only display the error if it's not the callback script and not a known action
+    if ($currentScript !== 'auth0_callback.php') {
+        echo "Invalid Auth Action.";
+        // Optional: Redirect to login page as a fallback?
+        // header('Location: login.php');
+        exit;
+    }
+    // If it *is* the callback script but somehow failed before handleCallback,
+    // you might already be redirected by error handling within handleCallback.
+    // If not, you could add more specific error logging here.
 }
 
+// Ensure the handleCallback function itself has the redirect:
+// Inside the handleCallback function, make sure this line exists and is reached on success:
+// header('Location: dashboard.php');
+// exit;
 ?>
