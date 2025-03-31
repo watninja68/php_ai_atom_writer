@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require _DIR_ . '/vendor/autoload.php';
-include_once _DIR_ . '/db_init.php'; // Include DB config if needed later for user linking
+require __DIR__ . '/vendor/autoload.php';
+include_once __DIR__ . '/db_init.php'; // Include DB config if needed later for user linking
 
 use Auth0\SDK\Auth0;
 use Auth0\SDK\Configuration\SdkConfiguration;

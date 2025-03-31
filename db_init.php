@@ -14,5 +14,4 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,    // Fetch associative arrays
     PDO::ATTR_EMULATE_PREPARES   => false,               // Use native prepared statements
 ];
-echo "hey";
 ?>
