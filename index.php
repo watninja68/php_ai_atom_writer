@@ -2,7 +2,6 @@
 require_once __DIR__ . '/auth0_handler.php';
 
 // Use the function from the handler to check authentication
-session_start(); // Start the session if not already started
 
 $pageTitle = "Dashboard"; ?>
 <?php require_once 'layout/header.php'; ?>
