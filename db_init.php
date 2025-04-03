@@ -1,5 +1,4 @@
 <?php
-
 $dbHost = "45.132.241.167"; // Or your DB host (e.g., localhost)
 $dbPort = "3306";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
@@ -17,4 +16,3 @@ $options = [
 ];
 
 ?>
-

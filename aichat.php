@@ -2,21 +2,25 @@
 include 'db_init.php';
 require_once 'vendor/autoload.php';
 
-require_once __DIR__ . '/auth0_handler.php'; // Use require_once to ensure it's loaded
+require_once __DIR__ . '/auth0_handler.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start(); // Ensure session is started *before* checking authentication
-}
-
+// Use the function from the handler to check authentication
 if (!isAuthenticated()) {
-    // Optional: Store the intended destination to redirect back after login
-    // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
-
-    // Redirect to login page if not authenticated
+    // Optional: Store the intended destination
+    // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Uncomment if you want redirect back after login
     header('Location: login.php');
     exit;
 }
 
+// If authenticated, the script continues...
+// Example: Get user info if needed
+$userName = $_SESSION['user_name'] ?? 'User';
+$userEmail = $_SESSION['user_email'] ?? '';
+$userId = $_SESSION['user_id'] ?? null; // Your internal DB user ID
+include 'db_init.php';
+require_once 'vendor/autoload.php';
+
+// Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 

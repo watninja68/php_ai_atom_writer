@@ -1,6 +1,8 @@
 <?php
 // Include the Auth0 handler - this also handles session_start() safely
 session_start();
+
+include 'db_init.php';
 ?>
 <?php $pageTitle = "Dashboard"; ?>
 <?php require_once 'layout/header.php'; ?>
