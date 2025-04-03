@@ -1,60 +1,58 @@
 <?php
+// delete_convo.php
 require_once __DIR__ . '/auth0_handler.php';
+include_once __DIR__ . '/db_init.php'; // Include DB config
 
-// Use the function from the handler to check authentication
+// Check authentication
 if (!isAuthenticated()) {
-    // Store the intended destination BEFORE redirecting to login
-    $_SESSION['redirect_url_pending'] = $_SERVER['REQUEST_URI']; // Use a temporary key
-    header('Location: login.php'); // Redirect to login page
+    header('Location: login.php');
     exit;
 }
 
-// If authenticated, the script continues...
-// Use the centrally stored session variables
-$userName = $_SESSION['user_name'] ?? 'User'; // Use session var set in callback
-$userEmail = $_SESSION['user_email'] ?? ''; // Use session var set in callback
-$userId = $_SESSION['user_id']; 
+$userId = $_SESSION['user_id'];
+$conversationIdToDelete = $_GET['conversation_id'] ?? null;
+$currentConversationId = $_GET['current_id'] ?? null; // ID user was viewing
 
-include 'db_init.php';
-
-try {
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
-} catch (PDOException $e) {
-    http_response_code(500);
-    die("Database connection failed: " . $e->getMessage());
+if (!$conversationIdToDelete) {
+    // No ID provided, redirect back
+    header('Location: aichat.php');
+    exit;
 }
 
-// Get conversation ID and validate
-if (!isset($_GET['conversation_id'])) {
-    http_response_code(400);
-    die("No conversation specified.");
-}
-
-$conversationId = $_GET['conversation_id'];
-$userId = $_SESSION['user_id'] ?? null; // Assuming user ID is stored in session
-
+// Establish PDO connection (ensure db_init.php defines $dsn, $dbUser, $dbPass)
 try {
-    // Delete the conversation for the current user
-    $stmt = $pdo->prepare("DELETE FROM chat_messages 
-                          WHERE conversation_id = :conversation_id 
-                          AND user_id = :user_id");
-    
-    $result = $stmt->execute([
-        ':conversation_id' => $conversationId,
+    $pdo = new PDO($dsn, $dbUser, $dbPass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Prepare and execute deletion
+    $stmt = $pdo->prepare("DELETE FROM chat_messages WHERE conversation_id = :conv_id AND user_id = :user_id");
+    $stmt->execute([
+        ':conv_id' => $conversationIdToDelete,
         ':user_id' => $userId
     ]);
 
-    if ($result) {
-        http_response_code(200);
-        echo "Conversation deleted successfully";
+    // Redirect: If user deleted the conversation they were currently viewing,
+    // redirect to the base aichat.php so it picks a new one or shows 'new'.
+    // Otherwise, redirect back to the conversation they were on.
+    if ($conversationIdToDelete === $currentConversationId) {
+         header('Location: aichat.php'); // Go to default view
+         exit;
     } else {
-        http_response_code(500);
-        echo "Failed to delete conversation";
+         // Redirect back to the conversation they were previously viewing (if any)
+         if ($currentConversationId) {
+              header('Location: aichat.php?conversation_id=' . urlencode($currentConversationId));
+         } else {
+              header('Location: aichat.php'); // Fallback to default
+         }
+         exit;
     }
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo "Database error: " . $e->getMessage();
+    // Log the error
+    error_log("Error deleting conversation {$conversationIdToDelete} for user {$userId}: " . $e->getMessage());
+    // Redirect with an error flag maybe, or just back to chat
+    // For simplicity, just redirect back:
+    header('Location: aichat.php' . ($currentConversationId ? '?conversation_id=' . urlencode($currentConversationId) : ''));
+    exit;
 }
+?>
