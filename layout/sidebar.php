@@ -114,10 +114,10 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
             <i class="fas fa-gift text-lg w-6 text-center"></i>
             <span class="sidebar-text">Payment</span>
         </a>
-        <a href="tutorial.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'tutorial.php' ? 'active' : '' ?>">
+        <!-- <a href="tutorial.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'tutorial.php' ? 'active' : '' ?>">
             <i class="fas fa-graduation-cap text-lg w-6 text-center"></i>
             <span class="sidebar-text">Tutorial</span>
-        </a>
+        </a> -->
         <a href="editor.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'editor.php' ? 'active' : '' ?>">
             <i class="fas fa-edit text-lg w-6 text-center"></i>
             <span class="sidebar-text">Editor</span>
