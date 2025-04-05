@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
                   <div id="chat-content" class="flex-1 overflow-y-auto scrollbar-thin py-4 space-y-4" style="max-height: calc(100vh - 250px);">
                     <?php
                     // Fetch chat messages from the database
-                    $stmt = $pdo->prepare("SELECT * FROM 30ContentChat WHERE session_id = :session_id AND conversation_id = :conversation_id ORDER BY created_at ASC");
+                    $stmt = $pdo->prepare("SELECT * FROM 30contentchat WHERE session_id = :session_id AND conversation_id = :conversation_id ORDER BY created_at ASC");
                     $stmt->execute([
                         ':session_id' => session_id(),
                         ':conversation_id' => $conversationId

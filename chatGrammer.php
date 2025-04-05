@@ -35,7 +35,7 @@ try {
  * Save a chat message in the database including conversation_id.
  */
 function addChatMessage(PDO $pdo, $sessionId, $conversationId, $role, $content, $userId) {
-    $stmt = $pdo->prepare("INSERT INTO GrammerChat (session_id, conversation_id, role, content, user_id) 
+    $stmt = $pdo->prepare("INSERT INTO 	grammerchat (session_id, conversation_id, role, content, user_id) 
                            VALUES (:session_id, :conversation_id, :role, :content, :user_id)");
     $stmt->execute([
         ':session_id'      => $sessionId,

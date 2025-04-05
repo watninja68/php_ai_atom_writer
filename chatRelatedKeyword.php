@@ -58,7 +58,7 @@ $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'guest_user';
 
 // Database functions
 function getConversationHistory(PDO $pdo, $sessionId, $conversationId, $userId) {
-    $stmt = $pdo->prepare("SELECT role, content, created_at FROM RelatedChat
+    $stmt = $pdo->prepare("SELECT role, content, created_at FROM relatedchat
                            WHERE session_id = :session_id AND conversation_id = :conversation_id AND user_id = :user_id
                            ORDER BY created_at ASC");
     $stmt->execute([

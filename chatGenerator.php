@@ -56,7 +56,7 @@ if (isset($_GET['conversation_id'])) {
 }
 
 function getConversationHistory(PDO $pdo, $sessionId, $conversationId, $userId) {
-    $stmt = $pdo->prepare("SELECT role, content, created_at FROM AssistantChat
+    $stmt = $pdo->prepare("SELECT role, content, created_at FROM 	assistantchat
                            WHERE session_id = :session_id AND conversation_id = :conversation_id AND user_id = :user_id
                            ORDER BY created_at ASC");
     $stmt->execute([
