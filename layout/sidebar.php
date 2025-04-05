@@ -103,11 +103,16 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
                 <a href="chatTrending.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatTrending.php' ? 'active' : '' ?>">
                     <span class="">Trending Topic finder</span>
                 </a>
+                
             </div>
         </div>
         <a href="gift.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'gift.php' ? 'active' : '' ?>">
             <i class="fas fa-gift text-lg w-6 text-center"></i>
             <span class="sidebar-text">Gift and Offer</span>
+        </a>
+        <a href="paddle.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'gift.php' ? 'active' : '' ?>">
+            <i class="fas fa-gift text-lg w-6 text-center"></i>
+            <span class="sidebar-text">Payment</span>
         </a>
         <a href="tutorial.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'tutorial.php' ? 'active' : '' ?>">
             <i class="fas fa-graduation-cap text-lg w-6 text-center"></i>

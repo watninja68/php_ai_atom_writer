@@ -1,6 +1,6 @@
 <?php
 include 'db_init.php';
-require_once 'vendor/autoload.php';
+
 require_once __DIR__ . '/auth0_handler.php';
 
 // Use the function from the handler to check authentication
@@ -35,7 +35,7 @@ try {
  * Save a chat message in the database including conversation_id.
  */
 function addChatMessage(PDO $pdo, $sessionId, $conversationId, $role, $content, $userId) {
-    $stmt = $pdo->prepare("INSERT INTO chat_messages (session_id, conversation_id, role, content, user_id) 
+    $stmt = $pdo->prepare("INSERT INTO GrammerChat (session_id, conversation_id, role, content, user_id) 
                            VALUES (:session_id, :conversation_id, :role, :content, :user_id)");
     $stmt->execute([
         ':session_id'      => $sessionId,

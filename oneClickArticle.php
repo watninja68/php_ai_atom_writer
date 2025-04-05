@@ -2,13 +2,13 @@
 // Start session and include dependencies
 require_once __DIR__ . '/auth0_handler.php';
 
-// Use the function from the handler to check authentication
-if (!isAuthenticated()) {
-    // Optional: Store the intended destination
-    // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Uncomment if you want redirect back after login
-    header('Location: login.php');
-    exit;
-}
+// // Use the function from the handler to check authentication
+// if (!isAuthenticated()) {
+//     // Optional: Store the intended destination
+//     // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Uncomment if you want redirect back after login
+//     header('Location: login.php');
+//     exit;
+// }
 
 // If authenticated, the script continues...
 // Example: Get user info if needed
@@ -36,7 +36,7 @@ try {
  * Store a chat message in the database including conversation_id.
  */
 function addChatMessage(PDO $pdo, $sessionId, $conversationId, $role, $content, $userId) {
-    $stmt = $pdo->prepare("INSERT INTO chat_messages (session_id, conversation_id, role, content, user_id) 
+    $stmt = $pdo->prepare("INSERT INTO TrendingChat (session_id, conversation_id, role, content, user_id) 
                            VALUES (:session_id, :conversation_id, :role, :content, :user_id)");
     $stmt->execute([
         ':session_id'      => $sessionId,

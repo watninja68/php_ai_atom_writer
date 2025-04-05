@@ -165,7 +165,6 @@ $productsArray = iterator_to_array($products);
             text-align: center;
             margin: 10px auto 50px auto;
             z-index: 1;
-            margin-top: 100px;
         }
         h2 {
             margin-top: 20px;

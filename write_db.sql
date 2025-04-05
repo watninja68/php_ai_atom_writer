@@ -141,6 +141,91 @@ CREATE TABLE `chat_messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
+CREATE TABLE `ContentChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `OneClickContentChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `30ContentChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+CREATE TABLE `RelatedChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `GrammerChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `PromptChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `TrendingChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `AssistantChat` (
+  `id` int(11) NOT NULL,
+  `session_id` varchar(255) NOT NULL,
+  `conversation_id` varchar(255) NOT NULL,
+  `user_id` varchar(255) NOT NULL COMMENT 'Auth0 ID?',
+  `role` enum('user','assistant') NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --

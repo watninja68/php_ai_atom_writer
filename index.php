@@ -2,12 +2,12 @@
 require_once __DIR__ . '/auth0_handler.php';
 
 // Use the function from the handler to check authentication
-if (!isAuthenticated()) {
-    // Store the intended destination BEFORE redirecting to login
-    $_SESSION['redirect_url_pending'] = $_SERVER['REQUEST_URI']; // Use a temporary key
-    header('Location: login.php'); // Redirect to login page
-    exit;
-}
+// if (!isAuthenticated()) {
+//     // Store the intended destination BEFORE redirecting to login
+//     $_SESSION['redirect_url_pending'] = $_SERVER['REQUEST_URI']; // Use a temporary key
+//     header('Location: login.php'); // Redirect to login page
+//     exit;
+// }
 
 // If authenticated, the script continues...
 // Use the centrally stored session variables
