@@ -110,7 +110,7 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
             <i class="fas fa-gift text-lg w-6 text-center"></i>
             <span class="sidebar-text">Gift and Offer</span>
         </a>
-        <a href="paddle.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'gift.php' ? 'active' : '' ?>">
+        <a href="paddle.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white 
             <i class="fas fa-gift text-lg w-6 text-center"></i>
             <span class="sidebar-text">Payment</span>
         </a>
