@@ -6,6 +6,7 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
     class="sidebar bg-gray-800 p-4  flex flex-col z-50 space-y-3 md:h-full h-screen fixed transform -translate-x-full md:translate-x-0 transition-transform duration-300 ">
     <div class="flex item-center justify-between">
         <div class="flex justify-between item-center">
+            <!-- Logo SVG and Text -->
             <div class="" style="width: 40px; height: 45px;"><svg width="100%" height="100%"
                     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     viewBox="0 0 128.98 113.78">
@@ -29,21 +30,21 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
                     </defs>
                     <g id="Creaitor_Mark_396" data-name="Creaitor_Mark396">
                         <g id="Creaitor_Mark_Layer_396" data-name="Creaitor_Mark_Layer396">
-                            <circle cx="13.53" cy="56.89" r="13.53" style="fill: url(&quot;#linear-gradient-396&quot;);">
+                            <circle cx="13.53" cy="56.89" r="13.53" style="fill: url('#linear-gradient-396');">
                             </circle>
                             <path
                                 d="M88.26,0a13.43,13.43,0,0,0-7.18,2.07L81,2.14c-.56.46-1.14.9-1.73,1.32A28.25,28.25,0,0,1,62.84,8.67,28.24,28.24,0,0,1,46.46,3.46c-.47-.33-.94-.68-1.39-1l-.34-.27a13.53,13.53,0,1,0-.46,23.05c.26-.23.53-.45.8-.67.61-.48,1.23-.95,1.88-1.39a28.42,28.42,0,0,1,31.79,0,28.71,28.71,0,0,1,2.34,1.77l.33.29A13.53,13.53,0,1,0,88.26,0Z"
-                                style="fill: url(&quot;#linear-gradient-396-2&quot;);"></path>
+                                style="fill: url('#linear-gradient-396-2');"></path>
                             <path
                                 d="M88.26,86.73a13.42,13.42,0,0,0-7.18,2.06l-.12.08c-.56.46-1.14.9-1.73,1.32a28.41,28.41,0,0,1-32.77,0c-.47-.34-.94-.69-1.39-1l-.34-.27a13.53,13.53,0,1,0-.46,23l.8-.66c.61-.49,1.23-1,1.88-1.39a28.42,28.42,0,0,1,31.79,0,26.6,26.6,0,0,1,2.34,1.77l.33.28a13.4,13.4,0,0,0,6.85,1.87,13.53,13.53,0,1,0,0-27Z"
-                                style="fill: url(&quot;#linear-gradient-396-3&quot;);"></path>
+                                style="fill: url('#linear-gradient-396-3');"></path>
                             <path
                                 d="M115.46,43.36a13.49,13.49,0,0,0-7.19,2.07l-.11.07c-.56.47-1.14.9-1.74,1.32a28.37,28.37,0,0,1-32.77,0c-.47-.33-.94-.68-1.39-1l-.34-.28a13.52,13.52,0,1,0-.45,23c.26-.22.52-.45.79-.66.61-.49,1.23-1,1.88-1.4a28.42,28.42,0,0,1,31.79,0,25.63,25.63,0,0,1,2.34,1.77l.34.29a13.53,13.53,0,1,0,6.85-25.19Z"
-                                style="fill: url(&quot;#linear-gradient-396-4&quot;);"></path>
+                                style="fill: url('#linear-gradient-396-4');"></path>
                         </g>
                     </g>
                 </svg></div>
-                <div class="p-3 sidebar-text" style="font-size: 1.25rem; color: #2bc7d4;"> Logo </div>
+            <div class="p-3 sidebar-text" style="font-size: 1.25rem; color: #2bc7d4;"> Logo </div>
         </div>
         <!-- Toggle Button -->
         <div class="toggle-btn cursor-pointer" onclick="sidebarCollapse()">
@@ -103,15 +104,15 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
                 <a href="chatTrending.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatTrending.php' ? 'active' : '' ?>">
                     <span class="">Trending Topic finder</span>
                 </a>
-                
+
             </div>
         </div>
         <a href="gift.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'gift.php' ? 'active' : '' ?>">
             <i class="fas fa-gift text-lg w-6 text-center"></i>
             <span class="sidebar-text">Gift and Offer</span>
         </a>
-        <a href="paddle.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white 
-            <i class="fas fa-gift text-lg w-6 text-center"></i>
+        <a href="paddle.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white">
+            <i class="fas fa-credit-card text-lg w-6 text-center"></i>
             <span class="sidebar-text">Payment</span>
         </a>
         <!-- <a href="tutorial.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'tutorial.php' ? 'active' : '' ?>">
@@ -124,7 +125,7 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
         </a>
         <a href="output.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'output.php' ? 'active' : '' ?>">
             <i class="fas fa-file-export text-lg w-6 text-center"></i>
-            <span class="sidebar-text">output</span>
+            <span class="sidebar-text">Output</span>
         </a>
         <a href="affiliate.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'affiliate.php' ? 'active' : '' ?>">
             <i class="fas fa-hand-holding-usd text-lg w-6 text-center"></i>
@@ -136,7 +137,7 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
         </a>
         <a href="contactus.php" class="sidebar-link dark:text-gray-900 text-gray-300 hover:text-white <?= $currentPage == 'contactus.php' ? 'active' : '' ?>">
             <i class="fas fa-envelope text-lg w-6 text-center"></i>
-            <span class="sidebar-text">contact Us</span>
+            <span class="sidebar-text">Contact Us</span>
         </a>
     </nav>
 </aside>

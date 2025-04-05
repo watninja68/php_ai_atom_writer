@@ -1,6 +1,6 @@
 <?php
 $dbHost = "45.132.241.167"; // Or your DB host (e.g., localhost)
-$dbPort = "3369";      // Or 8111 if that's your MariaDB port
+$dbPort = "3360";      // Or 8111 if that's your MariaDB port
 $dbName = "write_db";   // <--- CHANGE THIS
 $dbUser = "root";      // <--- CHANGE THIS (Use a dedicated user if possible)
 $dbPass = "password";          // <--- CHANGE THIS (Your DB user's password)

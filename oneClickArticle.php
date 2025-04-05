@@ -1,187 +1,251 @@
 <?php
 // Start session and include dependencies
-require_once __DIR__ . '/auth0_handler.php';
+require_once __DIR__ . '/auth0_handler.php'; // Handles Auth0 authentication and session start
+require_once __DIR__ . '/db_init.php';      // Defines $dsn, $dbUser, $dbPass
+require_once __DIR__ . '/vendor/autoload.php'; // Composer autoload
 
-// // Use the function from the handler to check authentication
-// if (!isAuthenticated()) {
-//     // Optional: Store the intended destination
-//     // $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Uncomment if you want redirect back after login
-//     header('Location: login.php');
-//     exit;
-// }
+use Dotenv\Dotenv;
+use OpenAI\Client; // Alias for OpenAI client
 
-// If authenticated, the script continues...
-// Example: Get user info if needed
+// --- Authentication Check ---
+// Uncomment this block to enforce login
+ if (!isAuthenticated()) {
+     $_SESSION['redirect_url_pending'] = $_SERVER['REQUEST_URI'];
+     header('Location: login.php');
+     exit;
+ }
+
+// --- Get Authenticated User Info ---
 $userName = $_SESSION['user_name'] ?? 'User';
 $userEmail = $_SESSION['user_email'] ?? '';
-$userId = $_SESSION['user_id'] ?? null; // Your internal DB user ID
-include 'db_init.php';
-require_once 'vendor/autoload.php';
+$userId = $_SESSION['user_id'] ?? null; // Your internal DB user ID (should be set if authenticated)
 
-// Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
+// --- Load Environment Variables ---
+try {
+    $dotenv = Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+    $dotenv->required(['QWEN_API']); // Ensure API key is in .env
+} catch (Exception $e) {
+    error_log("Error loading .env file in oneClickArticle.php: " . $e->getMessage());
+    die('Required environment variables are missing. Check logs.');
+}
 $yourApiKey = $_ENV['QWEN_API'];
 
+// --- Database Connection (Optional - Only if saving results) ---
+$pdo = null;
 try {
-    $pdo = new PDO($dsn, $dbUser, $dbPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
+    $pdo = new PDO($dsn, $dbUser, $dbPass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    error_log("Database connection failed in oneClickArticle.php (non-critical?): " . $e->getMessage());
+    // Decide if the page can function without DB. For generation/display, it might.
+    // die("Database service unavailable.");
 }
 
-/**
- * Store a chat message in the database including conversation_id.
- */
-function addChatMessage(PDO $pdo, $sessionId, $conversationId, $role, $content, $userId) {
-    $stmt = $pdo->prepare("INSERT INTO oneclickcontentchat (session_id, conversation_id, role, content, user_id) 
-                           VALUES (:session_id, :conversation_id, :role, :content, :user_id)");
-    $stmt->execute([
-        ':session_id'      => $sessionId,
-        ':conversation_id' => $conversationId,
-        ':role'            => $role,
-        ':content'         => $content,
-        ':user_id'         => $userId
-    ]);
+// --- OpenAI Client Setup ---
+$client = null;
+try {
+    $client = OpenAI::factory()
+        ->withApiKey($yourApiKey)
+        ->withBaseUri('https://dashscope-intl.aliyuncs.com/compatible-mode/v1') // Use the correct API endpoint
+        ->make();
+} catch(Exception $e) {
+     error_log("Failed to create OpenAI client in oneClickArticle.php: " . $e->getMessage());
+     die("AI Service configuration error. Please check logs.");
 }
 
-/**
- * Call the Qwen API with the user query and store the messages.
- * Since you don't need a conversation history, we'll use a fixed conversation ID.
- */
-function chatWithQwen($client, PDO $pdo, $conversationId, $userInput, $userId) {
-    // Save the user's query
-    addChatMessage($pdo, session_id(), $conversationId, 'user', $userInput, $userId);
-    
-    // Prepare a minimal messages array (no conversation history)
-    $messages = [
-        ['role' => 'system', 'content' => 'You are a helpful AI assistant that provides trending topic insights.'],
-        ['role' => 'user',   'content' => $userInput]
-    ];
-    
-    try {
-        $result = $client->chat()->create([
-            'model'    => 'qwen-plus',
-            'messages' => $messages
-        ]);
-        $assistantResponse = $result->choices[0]->message->content;
-        // Save the assistant's reply
-        addChatMessage($pdo, session_id(), $conversationId, 'assistant', $assistantResponse, $userId);
-        return $assistantResponse;
-    } catch (Exception $e) {
-        $errorMsg = "Error: " . $e->getMessage();
-        addChatMessage($pdo, session_id(), $conversationId, 'assistant', $errorMsg, $userId);
-        return $errorMsg;
-    }
-}
+// --- Initialize AI Response and Error Variables ---
+$aiResponse = null; // Use null to indicate no response generated yet
+$errorMsg = null;   // To hold user-facing errors
 
-// Use a fixed conversation id (since conversation history isn't needed)
-$conversationId = 'default';
+// --- Handle POST Request for Article Generation ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['topic_description'], $_POST['keywords'])) {
+    // Renamed 'message' to 'topic_description' for clarity
+    $topic = trim($_POST['topic_description']);
+    $keywords = trim($_POST['keywords']);
 
-$aiResponse = "";
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
-    $userInput = trim($_POST['query']);
-    if ($userInput !== "") {
-        $client = OpenAI::factory()
-            ->withApiKey($yourApiKey)
-            ->withBaseUri('https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
-            ->make();
-        $aiResponse = chatWithQwen($client, $pdo, $conversationId, $userInput, $_SESSION['user_id']);
+    if (!empty($topic) && $client) {
+        // Construct a prompt specifically for article generation
+        $prompt = "Write a comprehensive and engaging blog post about the topic: '{$topic}'. Please incorporate the following keywords naturally throughout the article: {$keywords}. The article should be well-structured with clear headings (e.g., using H2 or H3 markdown), paragraphs, and provide valuable information to the reader.";
+
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => 'You are Coreho AI, an expert blog writer assistant designed by Coreho Solutions LLP. Your task is to generate high-quality, well-structured blog articles based on the provided topic and keywords.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ];
+
+        try {
+            $result = $client->chat()->create([
+                'model' => 'qwen-plus', // Confirm this is the correct model for long-form content
+                'messages' => $messages,
+                'temperature' => 0.7, // Adjust creativity vs. factuality
+                // 'max_tokens' => 2000, // Limit response length if needed
+            ]);
+
+            $aiResponse = $result->choices[0]->message->content ?? 'Sorry, the AI could not generate a response at this time.';
+
+            // --- Optional: Save the generated article ---
+            /*
+            if ($pdo && $aiResponse && $userId) {
+                try {
+                    // Make sure 'generated_articles' table exists with these columns
+                    $stmt = $pdo->prepare("INSERT INTO generated_articles (user_id, topic, keywords, content, created_at) VALUES (:user_id, :topic, :keywords, :content, NOW())");
+                    $stmt->execute([
+                        ':user_id' => $userId,
+                        ':topic' => $topic, // Use the topic variable
+                        ':keywords' => $keywords,
+                        ':content' => $aiResponse
+                    ]);
+                } catch (PDOException $e) {
+                    error_log("Failed to save one-click article to DB: " . $e->getMessage());
+                }
+            }
+            */
+            // --- End Optional Save ---
+
+        } catch (Exception $e) { // Catch potential API or network errors
+            error_log("Error calling Qwen API in oneClickArticle.php: " . $e->getMessage());
+            $errorMsg = "An error occurred while generating the article. Please check the application logs or try again later.";
+            $aiResponse = ''; // Prevent displaying partial/old results on error
+        }
+    } elseif (empty($topic)) {
+        $errorMsg = "Please provide a topic description for the article.";
+        $aiResponse = '';
+    } elseif (!$client) {
+         $errorMsg = "AI service is not configured correctly.";
+         $aiResponse = '';
     }
 }
 ?>
+
 <?php $pageTitle = "One Click Article"; ?>
 <?php require_once 'layout/header.php'; ?>
-   <!-- Sidebar -->
-        <?php require_once 'layout/sidebar.php'; ?>
 
-    <div id="mainContent" class="main-content h-screen md:p-4 overflow-hidden md:ml-64">
-         <!-- Header -->
-         <?php require_once 'layout/main-header.php'; ?> 
-        <div class="p-2">
-            <div class="mb-4">
-                <h1 class="text-2xl font-bold mb-2">One Click Article Wizard</h1>
-                <p class="text-gray-400 dark:text-black">Your step-by-step guide to crafting great content</p>
-            </div>
+<!-- Sidebar -->
+<?php require_once 'layout/sidebar.php'; ?>
 
-            <div class="flex flex-col md:flex-row flex-1 gap-2">
+<div id="mainContent" class="main-content flex-1 h-screen md:p-4 overflow-y-auto md:ml-64"> <!-- Changed overflow to auto for scrolling -->
+    <!-- Header -->
+    <?php require_once 'layout/main-header.php'; ?>
 
-                <!-- Sidebar (40% width) -->
-                <aside class="md:w-1/3 bg-gray-800 dark:bg-white relative rounded border-gray-700 py-4 px-1 flex md:h-[80%] min-h-72 flex-col">
-                
-                    <div class="sticky bottom-0 flex items-center gap-x-2">
-                        <form method="POST" action="" class="w-full flex gap-x-2">
-                            <input type="text" id="topic-input" name="query" placeholder="Enter keyword..."
-                                class="md:w-[80%] w-[82%] min-h-[3rem] dark:text-gray-600 p-3 rounded-xl bg-transparent text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300 placeholder:text-gray-400"/>
-                            <button type="submit" id="send-button"
-                                class="relative flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 hover:shadow-cyan-400/60 hover:scale-110 transition-all duration-300">
-                                <i class="fas fa-search text-white text-xl"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div id="chat-content" class="flex-1 overflow-y-auto scrollbar-thin py-4 space-y-4" style="max-height: calc(100vh - 250px);">
-                        <?php
-                        // Fetch chat messages from the database
-                        $stmt = $pdo->prepare("SELECT * FROM chat_messages WHERE session_id = :session_id AND conversation_id = :conversation_id ORDER BY created_at ASC");
-                        $stmt->execute([
-                            ':session_id' => session_id(),
-                            ':conversation_id' => $conversationId
-                        ]);
-                        $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                        foreach ($messages as $message) {
-                            $role = $message['role'];
-                            $content = $message['content'];
-                            $bgColor = $role === 'user' ? 'bg-gray-700/50' : 'bg-cyan-500/50';
-                            $textColor = $role === 'user' ? 'text-white' : 'text-white';
-                            $align = $role === 'user' ? 'self-start' : 'self-end';
-                            echo "<div class='p-2 $bgColor $textColor backdrop-blur-md rounded-lg shadow-lg $align break-words'>
-                                    <p>$content</p>
-                                </div>";
-                        }
-                        ?>
-                    </div>
-                </aside>
-
-
-
-                <main class="flex-1 bg-gray-800 dark:bg-white flex flex-col rounded overflow-hidden border-gray-700 p-3 h-[80%] relative mb-10">
-                     <!-- Article Topic Form with chat functionality -->
-            <form method="POST">
-                <div id="step-content" class="space-y-6 md:w-full">
-                    <div class="bg-white/10 dark:from-gray-400/10 dark:to-transparent p-6 rounded-xl shadow-md">
-                        <h3 class="text-lg dark:text-black font-bold">Article Topic</h3>
-                        <p class="text-gray-400 dark:text-black">Let's get started.</p>
-                        <textarea name="message" class="w-full p-3 rounded-md bg-gray-700 border-gray-600 text-white mt-3" rows="4"
-                            placeholder="A Small Description about the article..."></textarea>
-
-                        <button id="next-btn" type="submit"
-                            class="px-6 py-3 bg-cyan-600 my-3 hover:bg-cyan-500 text-white font-semibold rounded-lg shadow-lg">Create →</button>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Display the conversation history (chat messages) below the form -->
-            <?php if (!empty($chatHistory)): ?>
-            <div id="chat-content" class="mt-8 space-y-4">
-                <?php foreach ($chatHistory as $message): ?>
-                    <?php if ($message['role'] === 'user'): ?>
-                        <div class="message-user">
-                            <p><?php echo nl2br(htmlspecialchars($message['content'])); ?></p>
-                        </div>
-                    <?php else: ?>
-                        <div class="message-assistant">
-                            <p><?php echo nl2br(htmlspecialchars($message['content'])); ?></p>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-            <?php endif; ?>
-                </main>
-            </div>
-
+    <div class="p-2 md:p-4 space-y-8"> <!-- Added spacing -->
+        <div class="mb-4">
+            <h1 class="text-2xl font-bold mb-2 text-white dark:text-gray-800">One Click Article Wizard</h1>
+            <p class="text-gray-400 dark:text-gray-600">Generate a full article from just a topic and keywords.</p>
         </div>
-    </div>
-    <?php require_once 'layout/footer.php'; ?>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 space-y-8">
+
+            <!-- Topic and Keyword Input Form -->
+            <div class="glass-card p-6 rounded-xl shadow-md border border-gray-700 dark:border-gray-200">
+                 <h3 class="text-lg font-semibold mb-4 text-white dark:text-gray-800">Article Details</h3>
+
+                 <?php if ($errorMsg): ?>
+                    <div class="bg-red-500/20 border border-red-500 text-red-200 dark:text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline"><?php echo htmlspecialchars($errorMsg); ?></span>
+                    </div>
+                 <?php endif; ?>
+
+                 <form method="POST" action="oneClickArticle.php">
+                     <div class="space-y-4">
+                         <div>
+                            <label for="topic_description" class="block text-sm font-medium text-gray-300 dark:text-gray-700 mb-1">Article Topic / Description</label>
+                            <textarea id="topic_description" name="topic_description" required class="w-full p-3 rounded-md bg-gray-700/50 dark:bg-gray-200 border border-gray-600 dark:border-gray-400 text-white dark:text-black focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-300 placeholder:text-gray-400" rows="4"
+                                placeholder="Enter a clear topic or a short description of the article you want..."><?php echo isset($_POST['topic_description']) ? htmlspecialchars($_POST['topic_description']) : ''; ?></textarea>
+                         </div>
+                         <div>
+                            <label for="keywords" class="block text-sm font-medium text-gray-300 dark:text-gray-700 mb-1">Keywords (comma-separated)</label>
+                            <input type="text" id="keywords" name="keywords" required
+                                   class="w-full p-3 rounded-md bg-gray-700/50 dark:bg-gray-200 text-white dark:text-black border border-gray-600 dark:border-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-300 placeholder:text-gray-400"
+                                   placeholder="e.g., AI writing, content creation, blog automation"
+                                   value="<?php echo isset($_POST['keywords']) ? htmlspecialchars($_POST['keywords']) : ''; ?>">
+                         </div>
+                         <div class="text-center pt-2">
+                             <button type="submit"
+                                class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-cyan-400/40 transition-all duration-300 transform hover:scale-105 glow">
+                                <i class="fas fa-magic mr-2"></i> Generate Article
+                             </button>
+                         </div>
+                     </div>
+                 </form>
+            </div>
+
+            <!-- Generated Article Display Area -->
+            <div id="response-section" class="glass-card p-6 rounded-xl shadow-md border border-gray-700 dark:border-gray-200 <?php echo ($aiResponse === null && !$errorMsg) ? 'hidden' : ''; ?>">
+                 <h2 class="text-xl font-semibold mb-4 text-white dark:text-gray-800">Generated Article</h2>
+                 <div id="ai-response" class="prose prose-invert dark:prose-dark max-w-none text-gray-300 dark:text-gray-700 space-y-4">
+                    <?php
+                    if ($aiResponse !== null && $aiResponse !== '') {
+                        // Apply Markdown-like formatting
+                        $formattedResponse = htmlspecialchars($aiResponse);
+                        $formattedResponse = preg_replace('/\*\*(.*?)\*\*/s', '<strong>$1</strong>', $formattedResponse); // Bold
+                        $formattedResponse = preg_replace('/__(.*?)__/s', '<strong>$1</strong>', $formattedResponse); // Bold (alt)
+                        $formattedResponse = preg_replace('/\*(.*?)\*/s', '<em>$1</em>', $formattedResponse);       // Italic
+                        $formattedResponse = preg_replace('/_(.*?)_/s', '<em>$1</em>', $formattedResponse);         // Italic (alt)
+                        $formattedResponse = preg_replace('/`(.*?)`/s', '<code class="bg-gray-600 dark:bg-gray-300 px-1 rounded text-sm">$1</code>', $formattedResponse); // Inline code
+
+                        // Handle headings more robustly (match start of line)
+                        $formattedResponse = preg_replace('/^### (.*?)$/m', '<h4>$1</h4>', $formattedResponse);
+                        $formattedResponse = preg_replace('/^## (.*?)$/m', '<h3>$1</h3>', $formattedResponse);
+                        $formattedResponse = preg_replace('/^# (.*?)$/m', '<h2>$1</h2>', $formattedResponse);
+
+                        // Convert line breaks into paragraphs, handling lists better
+                        $lines = explode("\n", $formattedResponse);
+                        $finalOutput = '';
+                        $inList = false;
+                        foreach ($lines as $line) {
+                            $trimmedLine = trim($line);
+                            if (empty($trimmedLine)) {
+                                if ($inList) {
+                                    $finalOutput .= "</ul>\n"; // Close list on empty line
+                                    $inList = false;
+                                }
+                                continue; // Skip empty lines for paragraph logic
+                            }
+
+                            // Basic list detection (lines starting with * or -)
+                            if (preg_match('/^[\*\-] (.*)/', $trimmedLine, $matches)) {
+                                if (!$inList) {
+                                    $finalOutput .= "<ul>\n";
+                                    $inList = true;
+                                }
+                                $finalOutput .= "<li>" . trim($matches[1]) . "</li>\n";
+                            } else {
+                                if ($inList) {
+                                    $finalOutput .= "</ul>\n"; // Close list if line is not a list item
+                                    $inList = false;
+                                }
+                                // Wrap non-heading, non-list lines in <p> tags
+                                if (!preg_match('/^<h[2-4]>/', $trimmedLine) && !preg_match('/^<code/', $trimmedLine)) {
+                                     $finalOutput .= '<p>' . $trimmedLine . '</p>' . "\n"; // Use trimmed line
+                                } else {
+                                    $finalOutput .= $trimmedLine . "\n"; // Output heading/code as is
+                                }
+                            }
+                        }
+                        if ($inList) {
+                            $finalOutput .= "</ul>\n"; // Close list if it's the last element
+                        }
+
+                        echo $finalOutput;
+
+                    } elseif ($aiResponse === '') { // Explicitly check for empty string response
+                         echo "<p class='text-gray-500'>The AI generated an empty response. Try refining your topic or keywords.</p>";
+                    } elseif (!$errorMsg) { // Only show placeholder if no error and no response yet
+                        echo "<p class='text-gray-500'>Your generated article will appear here...</p>";
+                    }
+                    ?>
+                </div>
+            </div>
+        </main> <!-- End Main Content Area -->
+    </div> <!-- End Padding Div -->
+</div> <!-- End Flex Container -->
+
+<?php require_once 'layout/footer.php'; ?>

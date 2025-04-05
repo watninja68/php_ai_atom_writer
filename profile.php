@@ -1,67 +1,139 @@
 <?php
-// Initialize the session - is required to check the login state.
-require_once __DIR__ . '/auth0_handler.php'; // Use require_once to ensure it's loaded
+// Include the Auth0 handler - this also handles session_start() safely
+require_once __DIR__ . '/auth0_handler.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start(); // Ensure session is started *before* checking authentication
-}
-
+// Use the function from the handler to check authentication
 if (!isAuthenticated()) {
-    // Optional: Store the intended destination to redirect back after login
-    $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
-
-    // Redirect to login page if not authenticated
+    // Optional: Store the intended destination
+    $_SESSION['redirect_url_pending'] = $_SERVER['REQUEST_URI']; // Use temporary key
     header('Location: login.php');
     exit;
 }
+
+// If authenticated, the script continues...
+// --- Get user info reliably from session variables set in auth0_handler ---
+$userName = $_SESSION['user_name'] ?? 'User'; // Default to 'User'
+$userEmail = $_SESSION['user_email'] ?? 'No email provided'; // Default text
+$userId = $_SESSION['user_id'] ?? null; // Your internal DB user ID (should always be set if authenticated)
+$userPicture = $_SESSION['user_picture'] ?? 'assets/images/user.png'; // Default placeholder image
+
+// --- Optional: Fetch additional data from your database if needed ---
+/*
+$pdo = null;
+$additionalUserData = null;
+if ($userId) {
+    try {
+        // Ensure db_init.php is included via auth0_handler.php or include it here
+        // require_once __DIR__ . '/db_init.php';
+        global $dsn, $dbUser, $dbPass; // Use globals defined in db_init.php
+        $pdo = new PDO($dsn, $dbUser, $dbPass);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :user_id"); // Fetch all data or specific columns
+        $stmt->execute([':user_id' => $userId]);
+        $additionalUserData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // You could potentially override session data if DB is more up-to-date, or merge data
+        // if ($additionalUserData && isset($additionalUserData['name'])) {
+        //     $userName = $additionalUserData['name'];
+        // }
+
+    } catch (PDOException $e) {
+        error_log("Database error fetching user data in profile.php: " . $e->getMessage());
+        // Handle error appropriately, maybe show a message, but don't crash
+    }
+}
+*/
+// --- End Optional DB Fetch ---
+
 ?>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width,minimum-scale=1">
-		<title>Profile</title>
-		<link href="style.css" rel="stylesheet" type="text/css">
-	</head>
-	<body>
+<?php $pageTitle = "User Profile"; ?>
+<?php require_once 'layout/header.php'; ?>
 
-		<div class="content home">
+<div class="flex flex-col md:flex-row">
 
-			<div class="profile-picture">
-                <img src="<?=$data?>" alt="<?=$name?>" width="100" height="100">
-            </div>
+   <!-- Sidebar -->
+   <?php require_once 'layout/sidebar.php'; ?>
 
-            <div class="profile-details">
+    <!-- Main Content -->
+    <main id="mainContent" class="main-content flex-1 md:ml-64 md:p-6">
+      <!-- Header -->
+      <?php require_once 'layout/main-header.php'; ?>
 
-                <div class="name">
-                    <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
-                    </div>
-                    <div class="wrap">
-                        <strong>Name</strong>
-                        <span><?=$name?></span>
-                    </div>
+      <!-- Breadcrumb -->
+        <nav class="flex pb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                <li class="inline-flex items-center">
+                <a href="dashboard.php" class="inline-flex items-center text-sm font-medium text-gray-300 hover:text-white dark:text-gray-400 dark:hover:text-cyan-500">
+                    <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                    </svg>
+                    Dashboard
+                </a>
+                </li>
+                <li aria-current="page">
+                <div class="flex items-center">
+                    <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                    </svg>
+                    <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Profile</span>
+                </div>
+                </li>
+            </ol>
+        </nav>
+
+
+      <!-- Profile Section -->
+        <div class="glass-card p-6 md:p-8 rounded-lg shadow-lg border border-gray-700 dark:border-gray-200 max-w-2xl mx-auto">
+            <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center text-white dark:text-gray-800">Your Profile</h1>
+
+            <div class="flex flex-col items-center space-y-6">
+                <!-- Profile Picture -->
+                <div class="relative">
+                    <img src="<?php echo htmlspecialchars($userPicture); ?>" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-cyan-500 shadow-md">
+                    <!-- Optional: Edit Icon -->
+                    <!-- <button class="absolute bottom-0 right-0 bg-gray-700 p-2 rounded-full hover:bg-cyan-600 transition duration-300">
+                        <i class="fas fa-pencil-alt text-white text-sm"></i>
+                    </button> -->
                 </div>
 
-                <div class="email">
-                    <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V176L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></svg>
-                    </div>
-                    <div class="wrap">
-                        <strong>Email</strong>
-                        <span><?=$email?></span>
-                    </div>
+                <!-- User Information -->
+                <div class="text-center space-y-2 w-full">
+                    <h2 class="text-xl font-semibold text-white dark:text-gray-900"><?php echo htmlspecialchars($userName); ?></h2>
+                    <p class="text-gray-400 dark:text-gray-600"><?php echo htmlspecialchars($userEmail); ?></p>
+                    <!-- Add more profile fields if needed -->
+                    <!-- Example: <p class="text-gray-500 dark:text-gray-500">Joined: [Join Date]</p> -->
+                    <?php if ($userId): ?>
+                         <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">User ID: <?php echo htmlspecialchars($userId); ?></p>
+                    <?php endif; ?>
                 </div>
 
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 w-full justify-center">
+                    <button class="bg-cyan-500/80 px-6 py-2 cursor-pointer text-white rounded-lg hover:bg-cyan-400/80 transition-all duration-300 glow w-full sm:w-auto">
+                        Edit Profile
+                    </button>
+                    <button class="bg-gray-600/50 px-6 py-2 cursor-pointer text-gray-300 dark:text-gray-700 rounded-lg hover:bg-gray-500/50 transition-all duration-300 w-full sm:w-auto">
+                        Change Password
+                    </button>
+                     <a href="auth0_action.php?action=logout" class="bg-red-600/80 text-center px-6 py-2 cursor-pointer text-white rounded-lg hover:bg-red-500/80 transition-all duration-300 w-full sm:w-auto">
+                        Logout
+                     </a>
+                </div>
+                 <!-- Optional: Display additional data fetched from DB -->
+                 <?php /* if ($additionalUserData): ?>
+                 <div class="mt-6 border-t border-gray-600 dark:border-gray-300 pt-6 w-full text-sm text-gray-400 dark:text-gray-600">
+                    <h3 class="font-semibold text-lg mb-2 text-white dark:text-gray-800">Additional Info</h3>
+                    <p><strong>Status:</strong> <?php echo htmlspecialchars($additionalUserData['status'] ?? 'N/A'); ?></p>
+                    <p><strong>Plan:</strong> <?php echo htmlspecialchars($additionalUserData['plan_id'] ?? 'N/A'); ?> </p>
+                    <p><strong>Created:</strong> <?php echo htmlspecialchars($additionalUserData['created_at'] ?? 'N/A'); ?></p>
+                     <!-- Add more fields as needed -->
+                 </div>
+                 <?php endif; */ ?>
             </div>
+        </div>
 
-            <a href="logout.php" class="logout-btn">
-                <span class="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
-                </span>
-                Logout
-            </a>
+    </main>
+</div>
 
-		</div>
-
-	</body>
-</html>
+<?php require_once 'layout/footer.php'; ?>
