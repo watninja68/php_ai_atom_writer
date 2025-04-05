@@ -92,15 +92,15 @@ $currentPage = basename($_SERVER['PHP_SELF']); // Get the current page name
                     <span class="">30 days Content Maker
                     </span>
                 </a>
-                <a href="chatRelatedKeyword.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatRelatedKeyword.php' ? 'active' : '' ?>">
+<!--                <a href="chatRelatedKeyword.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatRelatedKeyword.php' ? 'active' : '' ?>">
                     <span class="">Related keywords finder</span>
-                </a>
+                </a> -->
                 <a href="chatGrammer.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatGrammer.php' ? 'active' : '' ?>">
                     <span class="">Grammar Improvement</span>
                 </a>
-                <a href="chatGenerator.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatGenerator.php' ? 'active' : '' ?>">
+<!--                <a href="chatGenerator.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatGenerator.php' ? 'active' : '' ?>">
                     <span class="">AI Prompt Generator</span>
-                </a>
+                </a> -->
                 <a href="chatTrending.php" class="dark:text-gray-700 dark:hover:bg-cyan-100 dark:hover:bg-opacity-10 dark:hover:text-gray-500 submenu-link text-gray-400 hover:text-white <?= $currentPage == 'chatTrending.php' ? 'active' : '' ?>">
                     <span class="">Trending Topic finder</span>
                 </a>
